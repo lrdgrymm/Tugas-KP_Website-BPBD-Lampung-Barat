@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Dokumen extends Model
 {
     use HasFactory;
+
+    protected $table = 'dokumens';
     protected $fillable = ['nama_dokumen', 'kategori', 'file_path'];
 }

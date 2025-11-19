@@ -89,16 +89,28 @@ class DokumenController extends Controller
     /**
      * Menghapus dokumen dari database.
      */
-    public function destroy(Dokumen $dokumen)
+    public function destroy($id)
     {
-        // Hapus file dari storage
-        Storage::delete('public/dokumen/' . $dokumen->file_path);
-        
-        // Hapus data dari database
+        $dokumen = Dokumen::find($id);
+
+        if (!$dokumen) {
+            return redirect()->route('admin.dokumen.index')
+                ->with('error', 'Dokumen tidak ditemukan di database.');
+        }
+
+        // hapus file
+        if ($dokumen->file_path && Storage::exists('public/dokumen/'.$dokumen->file_path)) {
+            Storage::delete('public/dokumen/'.$dokumen->file_path);
+        }
+
+        // hapus data
         $dokumen->delete();
-        
-        return redirect()->route('admin.dokumen.index')->with('success', 'Dokumen berhasil dihapus.');
+
+        return redirect()->route('admin.dokumen.index')
+            ->with('success', 'Dokumen berhasil dihapus.');
     }
+
+
 
     public function download(Dokumen $dokumen)
     {

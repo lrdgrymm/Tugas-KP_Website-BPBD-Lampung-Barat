@@ -1,0 +1,87 @@
+.gempa-content {
+    padding: 0;
+    margin: 0;
+}
+
+.data-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0; /* Padding lebih kecil untuk widget */
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 0.9em; /* Ukuran font lebih kecil untuk widget */
+    line-height: 1.4;
+}
+
+.data-item:last-child {
+    border-bottom: none;
+}
+
+.data-item .label {
+    font-weight: 700;
+    color: #555;
+    padding-right: 10px;
+}
+
+.data-item .value {
+    text-align: right;
+    font-weight: 500;
+}
+
+.magnitude {
+    font-size: 1.2em; /* Sedikit lebih besar dari teks biasa */
+    font-weight: 700;
+    color: #d9534f;
+}
+
+.tsunami {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 8px;
+    font-weight: 700;
+    text-align: center;
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    border: 1px solid #faebcc;
+    font-size: 0.9em;
+}
+
+.tsunami.yes {
+    /* Jika berpotensi tsunami */
+    background-color: #f2dede;
+    color: #a94442;
+    border: 1px solid #ebccd1;
+}
+
+.shakemap {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.shakemap p {
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.shakemap img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.gempa-footer {
+    text-align: center;
+    padding: 10px 0 0 0;
+    font-size: 0.8em;
+    color: #888;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    margin-top: 10px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1em;
+    color: #888;
+}

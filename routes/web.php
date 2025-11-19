@@ -74,7 +74,9 @@ Route::middleware(['auth'])->group(function () {
 
     // Grup untuk semua URL admin
     Route::prefix('admin')->name('admin.')->group(function() {
-        Route::resource('berita', AdminBeritaController::class);
+        Route::resource('berita', AdminBeritaController::class)->parameters([
+            'berita' => 'beritaAdmin'
+        ]);
         Route::resource('dokumen', DokumenController::class);
         Route::resource('pegawai', PegawaiController::class);
         Route::resource('gallery', AdminGalleryController::class);

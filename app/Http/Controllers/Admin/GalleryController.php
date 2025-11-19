@@ -9,20 +9,41 @@ use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
+    // Halaman list gallery admin
     public function index()
     {
         $galleries = Gallery::latest()->paginate(12);
         return view('admin.gallery.index', compact('galleries'));
     }
 
+    // Form tambah gallery
     public function create()
     {
         return view('admin.gallery.create');
     }
 
+
+  
+
+    // Simpan gallery baru
     public function store(Request $request)
     {
-        // 1. Validasi dasar
+        function convertYouTubeToEmbed($url)
+        {
+            // Link panjang YouTube
+            if (preg_match('/youtube\.com\/watch\?v=([a-zA-Z0-9_\-]+)/', $url, $matches)) {
+                return 'https://www.youtube.com/embed/' . $matches[1];
+            }
+
+            // Link pendek YouTube
+            if (preg_match('/youtu\.be\/([a-zA-Z0-9_\-]+)/', $url, $matches)) {
+                return 'https://www.youtube.com/embed/' . $matches[1];
+            }
+
+            // Jika bukan YouTube, kembalikan apa adanya
+            return $url;
+        }
+        
         $request->validate([
             'judul' => 'required|string|max:255',
             'tipe' => 'required|in:foto,video',
@@ -31,34 +52,30 @@ class GalleryController extends Controller
         ]);
 
         $path = null;
-        // 2. Validasi & proses berdasarkan pilihan user
+
         if ($request->sumber_tipe == 'upload') {
-            // Jika user memilih upload
-            $rules = [
-                'file_upload' => 'required|file|max:5120', // Maks 5MB
-            ];
-            // Tambahkan aturan format file berdasarkan tipe
+            // Validasi file berdasarkan tipe
             if ($request->tipe == 'foto') {
-                $rules['file_upload'] .= '|mimes:jpeg,png,jpg,gif';
+                $request->validate([
+                    'file_upload' => 'required|file|mimes:jpeg,png,jpg,gif|max:5120',
+                ]);
             } else {
-                $rules['file_upload'] .= '|mimes:mp4,mov,avi,wmv';
+                $request->validate([
+                    'file_upload' => 'required|file|mimes:mp4,mov,avi,wmv|max:5120',
+                ]);
             }
-            $request->validate($rules);
 
-            // Simpan file
-            //$path = basename($request->file('file_upload')->store('gallery','public'));
-            $path = $request->file('file_upload')->store('gallery','public');
-            //$path = $request->file('gambar')->store('berita', 'public');
-            //$data['gambar'] = $path;
+            // Simpan file ke storage/app/public/gallery
+            $path = $request->file('file_upload')->store('gallery', 'public');
 
-        } else { // Jika user memilih link
+        } else { 
+            // Link eksternal
             $request->validate([
                 'link_url' => 'required|url',
             ]);
-            $path = $request->link_url;
+            $path = convertYouTubeToEmbed($request->link_url    );
         }
 
-        // 3. Simpan data ke database
         Gallery::create([
             'judul' => $request->judul,
             'tipe' => $request->tipe,
@@ -67,16 +84,20 @@ class GalleryController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        return redirect()->route('admin.gallery.index')->with('success', 'Item galeri berhasil ditambahkan.');
+        return redirect()->route('admin.gallery.index')
+            ->with('success', 'Item galeri berhasil ditambahkan.');
     }
 
+    // Hapus gallery
     public function destroy(Gallery $gallery)
     {
         if ($gallery->sumber_tipe == 'upload' && $gallery->path) {
-            dd($gallery,$gallery->path);
-            Storage::delete('public/gallery/' . $gallery->path);
+            Storage::disk('public')->delete($gallery->path);
         }
+
         $gallery->delete();
-        return redirect()->route('admin.gallery.index')->with('success', 'Item galeri berhasil dihapus.');
+
+        return redirect()->route('admin.gallery.index')
+            ->with('success', 'Item galeri berhasil dihapus.');
     }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -10,7 +11,6 @@ class PegawaiController extends Controller
 {
     public function index()
     {
-        // Urut berdasarkan nama
         $pegawais = Pegawai::orderBy('nama', 'asc')->get();
         return view('admin.pegawai.index', compact('pegawais'));
     }
@@ -29,15 +29,16 @@ class PegawaiController extends Controller
             'foto' => 'nullable|image|max:2048',
         ]);
 
+        $path = null;
         if ($request->hasFile('foto')) {
-        $path = $request->file('foto')->store('pegawai', 'public');
-}
+            $path = $request->file('foto')->store('pegawai', 'public');
+        }
 
         Pegawai::create([
             'nama' => $request->nama,
             'jabatan' => $request->jabatan,
             'nip' => $request->nip,
-            'foto' => $path, // simpan path relatif, ex: pegawai/namafile.jpg
+            'foto' => $path,
         ]);
 
         return redirect()->route('admin.pegawai.index')
@@ -61,11 +62,10 @@ class PegawaiController extends Controller
         $path = $pegawai->foto;
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama
+            // Hapus foto lama jika ada
             if ($pegawai->foto && Storage::disk('public')->exists($pegawai->foto)) {
                 Storage::disk('public')->delete($pegawai->foto);
             }
-
             $path = $request->file('foto')->store('pegawai', 'public');
         }
 
@@ -80,11 +80,10 @@ class PegawaiController extends Controller
             ->with('success', 'Data pegawai berhasil diperbarui.');
     }
 
-    
     public function destroy(Pegawai $pegawai)
     {
-        if ($pegawai->foto && Storage::disk('public')->exists('pegawai/' . $pegawai->foto)) {
-            Storage::disk('public')->delete('pegawai/' . $pegawai->foto);
+        if ($pegawai->foto && Storage::disk('public')->exists($pegawai->foto)) {
+            Storage::disk('public')->delete($pegawai->foto);
         }
 
         $pegawai->delete();

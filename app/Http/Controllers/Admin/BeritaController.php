@@ -10,20 +10,17 @@ use Illuminate\Support\Str;
 
 class BeritaController extends Controller
 {
-    // Menampilkan daftar berita di PANEL ADMIN
     public function index()
     {
         $semua_berita = Berita::latest('tanggal_publikasi')->paginate(10);
         return view('admin.berita.index', compact('semua_berita'));
     }
 
-    // Menampilkan form tambah berita
     public function create()
     {
         return view('admin.berita.create');
     }
 
-    // Menyimpan berita baru
     public function store(Request $request)
     {
         $request->validate([
@@ -36,7 +33,6 @@ class BeritaController extends Controller
         ]);
 
         $path = $request->file('gambar')->store('berita', 'public');
-        $data['gambar'] = $path;
 
         Berita::create([
             'judul' => $request->judul,
@@ -52,14 +48,12 @@ class BeritaController extends Controller
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil ditambahkan.');
     }
 
-    // Menampilkan form edit berita
-    public function edit(Berita $berita)
+    public function edit(Berita $beritaAdmin)
     {
-        return view('admin.berita.edit', compact('berita'));
+        return view('admin.berita.edit', ['berita' => $beritaAdmin]);
     }
 
-    // Memperbarui berita di database
-    public function update(Request $request, Berita $berita)
+    public function update(Request $request, Berita $beritaAdmin)
     {
         $request->validate([
             'judul' => 'required|string|max:255',
@@ -80,39 +74,39 @@ class BeritaController extends Controller
             'tanggal_publikasi' => $request->tanggal_publikasi,
         ];
 
-        // Jika ada gambar baru, hapus lama lalu simpan yang baru
         if ($request->hasFile('gambar')) {
-            if ($berita->gambar && Storage::exists('public/berita/' . $berita->gambar)) {
-                Storage::delete('public/berita/' . $berita->gambar);
+            if ($beritaAdmin->gambar && Storage::exists('public/berita/' . $beritaAdmin->gambar)) {
+                Storage::delete('public/berita/' . $beritaAdmin->gambar);
             }
+
             $path = $request->file('gambar')->store('berita', 'public');
             $data['gambar'] = basename($path);
         }
 
-        $berita->update($data);
+        $beritaAdmin->update($data);
 
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil diperbarui.');
     }
 
-    public function destroy(Berita $berita)
+    public function destroy(Berita $beritaAdmin)
     {
-        //if ($berita->gambar || Storage::exists('public/berita/' .$berita->gambar)) {
-            //Storage::disk('public')->delete('berita/' .$berita->gambar);
-            dd($berita,$berita->gambar);
-            Storage::delete('public/berita/' .$berita->gambar);
-    //}
+        try {
+            if ($beritaAdmin->gambar) {
+                $fullPath = 'public/berita/' . $beritaAdmin->gambar;
 
-        $berita->delete();
+                if (Storage::exists($fullPath)) {
+                    Storage::delete($fullPath);
+                }
+            }
 
-        return redirect()->route('admin.berita.index')
-            ->with('success', 'Berita berhasil dihapus.');
+            $beritaAdmin->delete();
+
+            return redirect()->route('admin.berita.index')
+                ->with('success', 'Berita berhasil dihapus.');
+
+        } catch (\Exception $e) {
+            return redirect()->route('admin.berita.index')
+                ->with('error', 'Gagal menghapus berita: ' . $e->getMessage());
+        }
     }
-
-   // public function destroy(Gallery $gallery) {
-    //    if ($gallery->sumber_tipe == 'upload' && $gallery->path) {
-       //     Storage::delete('public/gallery/' . $gallery->path);
-       // }
-       // $gallery->delete();
-        //return redirect()->route('admin.gallery.index')->with('success', 'Item galeri berhasil dihapus.');
-    //}
 }

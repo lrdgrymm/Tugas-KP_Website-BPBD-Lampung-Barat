@@ -23,4 +23,13 @@ class BeritaController extends Controller
         $beritaLainnya = Berita::where('id', '!=', $berita->id)->latest('tanggal_publikasi')->take(3)->get();
         return view('berita.show', compact('berita', 'beritaLainnya'));
     }
+
+    public function destroy(Berita $berita)
+    {
+        // Hapus berita dari database
+        $berita->delete();
+
+        // Redirect kembali ke halaman daftar berita dengan pesan sukses
+        return redirect()->route('berita.index')->with('success', 'Berita berhasil dihapus.');
+    }
 }
